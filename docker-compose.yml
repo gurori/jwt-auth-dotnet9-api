@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  api:
+    container_name: api
+    image: server:latest
+    ports:
+      - "8080:8080"
+    environment:
+      #- ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
+      #- ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_URLS=http://+:8080
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./ssl:/app/ssl
+      - ./Server:/app/Server
+      - ./Core:/app/Core
+      - ./DataAccess:/app/DataAccess
+      - ./Infrastructure:/app/Infrastructure
+      - ./Application:/app/Application
+    networks:
+      - app
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - app
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  postgres-data:

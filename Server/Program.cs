@@ -1,5 +1,5 @@
 using Application.Interfaces.Auth;
-using Infastructure.Auth;
+using Infrastructure.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
 

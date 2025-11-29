@@ -1,4 +1,5 @@
 using Application.Interfaces.Auth;
+using DataAccess;
 using Infrastructure.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
@@ -29,15 +30,15 @@ services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 services.AddControllers();
 
-// services.AddDbContext<ItesDbContext>(options =>
-//     options.UseNpgsql(configuration.GetConnectionString(nameof(ItesDbContext)))
-// );
+services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(configuration.GetConnectionString(nameof(AppDbContext)))
+);
 
 var app = builder.Build();
 
-// using var scope = app.Services.CreateScope();
-// await using var dbContext = scope.ServiceProvider.GetRequiredService<ItesDbContext>();
-// await dbContext.Database.EnsureCreatedAsync();
+using var scope = app.Services.CreateScope();
+await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+await dbContext.Database.EnsureCreatedAsync();
 
 if (app.Environment.IsDevelopment())
 {

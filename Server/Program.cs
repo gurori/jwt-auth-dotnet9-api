@@ -1,3 +1,5 @@
+using Application.Interfaces.Auth;
+using Infastructure.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +24,8 @@ services.AddCors(option =>
         policy.AllowAnyMethod();
     });
 });
+
+services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 services.AddControllers();
 

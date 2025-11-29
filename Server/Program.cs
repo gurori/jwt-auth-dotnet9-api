@@ -1,5 +1,8 @@
 using Application.Interfaces.Auth;
+using Application.Interfaces.Repositories;
 using DataAccess;
+using DataAccess.Repositories;
+using Infastructure.Auth;
 using Infrastructure.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
@@ -9,8 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
 
-//services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));
-//services.Configure<AuthorizationOptions>(configuration.GetSection(nameof(AuthorizationOptions)));
+services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));
+services.Configure<AuthorizationOptions>(configuration.GetSection(nameof(AuthorizationOptions)));
 
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
@@ -26,6 +29,15 @@ services.AddCors(option =>
     });
 });
 
+// DI Containers
+
+// Repositoties
+services.AddScoped<IRoleRepository, RoleRepository>();
+
+// Services
+
+// Auth
+services.AddScoped<IJwtProvider, JwtProvider>();
 services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 services.AddControllers();

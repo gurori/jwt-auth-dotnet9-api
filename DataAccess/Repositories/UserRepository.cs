@@ -20,7 +20,13 @@ namespace DataAccess.Repositories
             if (isUserExist)
                 return false;
 
-            var userEntity = new UserEntity() { Role = role, Email = email };
+            var userEntity = new UserEntity()
+            {
+                Role = role,
+                Email = email,
+                Name = name,
+                PasswordHash = passwordHash,
+            };
 
             await _context.Users.AddAsync(userEntity);
             await _context.SaveChangesAsync();

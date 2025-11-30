@@ -1,5 +1,7 @@
 using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Services;
+using Application.Services;
 using DataAccess;
 using DataAccess.Repositories;
 using Infastructure.Auth;
@@ -36,8 +38,10 @@ services.AddCors(option =>
 
 // Repositoties
 services.AddScoped<IRoleRepository, RoleRepository>();
+services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
+services.AddScoped<IUserService, UserService>();
 
 // Auth
 services.AddScoped<IJwtProvider, JwtProvider>();

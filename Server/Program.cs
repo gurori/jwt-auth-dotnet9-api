@@ -6,6 +6,7 @@ using Infastructure.Auth;
 using Infrastructure.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
+using Server.Controllers;
 using Server.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,7 +46,10 @@ services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 services.AddAuthentication(configuration);
 
-services.AddControllers();
+services.AddControllers(options =>
+{
+    options.Filters.Add<ApiExceptionFilter>();
+});
 
 services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString(nameof(AppDbContext)))

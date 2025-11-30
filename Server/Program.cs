@@ -6,6 +6,7 @@ using Infastructure.Auth;
 using Infrastructure.Auth;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
+using Server.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,10 @@ services.AddScoped<IRoleRepository, RoleRepository>();
 // Auth
 services.AddScoped<IJwtProvider, JwtProvider>();
 services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+//services.AddAutoMapper(typeof());
+
+services.AddAuthentication(configuration);
 
 services.AddControllers();
 

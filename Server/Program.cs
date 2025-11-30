@@ -4,6 +4,7 @@ using DataAccess;
 using DataAccess.Repositories;
 using Infastructure.Auth;
 using Infrastructure.Auth;
+using Infrastructure.Mapping;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
 using Server.Controllers;
@@ -42,7 +43,7 @@ services.AddScoped<IRoleRepository, RoleRepository>();
 services.AddScoped<IJwtProvider, JwtProvider>();
 services.AddScoped<IPasswordHasher, PasswordHasher>();
 
-//services.AddAutoMapper(typeof());
+services.AddAutoMapper(typeof(UserAutoMapperProfile));
 
 services.AddAuthentication(configuration);
 

@@ -1,4 +1,4 @@
-namespace DataAccess.Entities
+namespace Core.Entities
 {
     public sealed class RoleEntity
     {

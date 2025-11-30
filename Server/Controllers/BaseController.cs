@@ -6,8 +6,19 @@ namespace Server.Controllers
 {
     public abstract class BaseController : ControllerBase
     {
-        protected string GetTokenFromHeaders() =>
-            Request.Headers.Authorization.FirstOrDefault()!.Split(" ").Last();
+        protected string GetTokenFromHeaders()
+        {
+            if (!Request.Headers.TryGetValue("Authorization", out var header))
+                throw new UnauthorizedException();
+
+            var parts = header.ToString().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            return (
+                parts.Length == 2 && parts[0].Equals("Bearer", StringComparison.OrdinalIgnoreCase)
+            )
+                ? parts[1]
+                : throw new UnauthorizedException();
+        }
     }
 
     public sealed class ApiExceptionFilter : IAsyncExceptionFilter

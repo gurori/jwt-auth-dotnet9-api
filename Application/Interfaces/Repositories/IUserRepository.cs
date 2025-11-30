@@ -1,24 +1,22 @@
-using Core.Models;
+using Core.Entities;
 
 namespace Application.Interfaces.Repositories
 {
     public interface IUserRepository
     {
-        public Task<bool> TryCreateAsync(User user);
-
-        public Task<User?> GetByEmailAsync(string email);
-
-        public Task<User?> GetByIdAsync(string id);
-        public Task UpdateAsync(
-            string id,
-            string lastName,
-            string firstName,
-            string middleName,
-            string description,
-            string jobTitle
+        public Task<bool> TryCreateAsync(
+            string name,
+            string email,
+            string passwordHash,
+            string role
         );
+
+        public Task<UserEntity?> GetByEmailAsync(string email);
+
+        public Task<UserEntity?> GetByIdAsync(string id);
+        public Task UpdateAsync(string id, string name);
         public Task<string?> GetRoleByIdAsync(string id);
-        public Task<ICollection<User>> GetManyByIdAsync(IEnumerable<string> ids);
+        public Task<IEnumerable<UserEntity>> GetManyByIdAsync(IEnumerable<string> ids);
         public Task DeleteByIdAsync(string id);
     }
 }

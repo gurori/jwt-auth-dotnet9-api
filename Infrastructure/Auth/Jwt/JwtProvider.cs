@@ -4,6 +4,7 @@ using System.Text;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
 using Core.Models;
+using Core.Models.Users;
 using Core.Structs;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -17,11 +18,11 @@ namespace Infastructure.Auth
         private readonly JwtSecurityTokenHandler _tokenHandler = new();
         private readonly JwtOptions _options = options.Value;
 
-        public async Task<string> GenerateTokenAsync(User user)
+        public async Task<string> GenerateTokenAsync(string id, string role)
         {
-            List<Claim> claims = [new(CustomClaims.UserId, user.Id)];
+            List<Claim> claims = [new(CustomClaims.UserId, id)];
 
-            HashSet<int> permissions = await _roleRepository.GetPermissionsIdsAsync(user.Role);
+            HashSet<int> permissions = await _roleRepository.GetPermissionsIdsAsync(role);
 
             claims.Add(new(CustomClaims.Permissions, string.Join(" ", permissions)));
 

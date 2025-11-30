@@ -1,6 +1,5 @@
+using Core.Entities;
 using Core.Enums;
-using DataAccess.Configurations;
-using DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

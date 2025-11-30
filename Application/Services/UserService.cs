@@ -1,117 +1,117 @@
-// using Application.Interfaces.Auth;
-// using Application.Interfaces.Repositories;
-// using Application.Interfaces.Services;
-// using AutoMapper;
-// using Core.Models;
+using Application.Interfaces.Auth;
+using Application.Interfaces.Repositories;
+using Application.Interfaces.Services;
+using AutoMapper;
+using Core.Entities;
+using Core.Exceptions;
+using Core.Models.Response;
+using Core.Structs;
+using Microsoft.IdentityModel.Tokens;
 
-// namespace Application.Services
-// {
-//     public class UserService(
-//         IPasswordHasher passwordHasher,
-//         IUserRepository userRepository,
-//         IJwtProvider jwtProvider,
-//         IMapper mapper
-//     ) : IUserService
-//     {
-//         private readonly IPasswordHasher _passwordHasher = passwordHasher;
-//         private readonly IUserRepository _userRepository = userRepository;
-//         private readonly IJwtProvider _jwtProvider = jwtProvider;
-//         private readonly IMapper _mapper = mapper;
+namespace Application.Services
+{
+    public class UserService(
+        IPasswordHasher passwordHasher,
+        IUserRepository userRepository,
+        IJwtProvider jwtProvider,
+        IMapper mapper
+    ) : IUserService
+    {
+        private readonly IPasswordHasher _passwordHasher = passwordHasher;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IJwtProvider _jwtProvider = jwtProvider;
+        private readonly IMapper _mapper = mapper;
 
-//         public async Task RegisterAsync(string name, string email, string password, string role)
-//         {
-//             string hashedPassword = _passwordHasher.Generate(password);
+        public async Task RegisterAsync(string name, string email, string password, string role)
+        {
+            string hashedPassword = _passwordHasher.Generate(password);
 
-//             User user = new("", name, email, hashedPassword, role);
-//             bool isUserExist = !await _userRepository.CreateAsync(user);
+            bool isUserExist = !await _userRepository.TryCreateAsync(
+                name,
+                email,
+                hashedPassword,
+                role
+            );
 
-//             if (isUserExist)
-//                 throw new ConflictException("Данный пользователь уже существует");
-//         }
+            if (isUserExist)
+                throw new ConflictException("Данный пользователь уже существует");
+        }
 
-//         public async Task<string> LoginAsync(string email, string password)
-//         {
-//             var userEntity =
-//                 await _userRepository.GetByEmailAsync(email)
-//                 ?? throw new NotFoundException("Пользователь с данной почтой не зарегистрирован");
+        public async Task<string> LoginAsync(string email, string password)
+        {
+            var userEntity =
+                await _userRepository.GetByEmailAsync(email)
+                ?? throw new NotFoundException("Пользователь с данной почтой не зарегистрирован");
 
-//             if (!_passwordHasher.IsVerify(password, userEntity.PasswordHash))
-//                 throw new ConflictException("Неверный пароль");
+            if (!_passwordHasher.Verify(password, userEntity.PasswordHash))
+                throw new ConflictException("Неверный пароль");
 
-//             var user = _mapper.Map<User>(userEntity);
-//             var token = await _jwtProvider.GenerateTokenAsync(user);
+            var token = await _jwtProvider.GenerateTokenAsync(userEntity.Id, userEntity.Role);
 
-//             return token;
-//         }
+            return token;
+        }
 
-//         public async Task<UserProfileResponse> GetFromTokenAsync(string token)
-//         {
-//             Guid id = await GetIdFromTokenAsync(token);
-//             User? user = await _userRepository.GetByIdAsync(id);
+        public async Task<UserResponse> GetFromTokenAsync(string token)
+        {
+            string id = await GetIdFromTokenAsync(token);
+            UserEntity? user = await _userRepository.GetByIdAsync(id);
 
-//             return _mapper.Map<UserProfileResponse>(user);
-//         }
+            return _mapper.Map<UserResponse>(user);
+        }
 
-//         public async Task<UserProfileResponse> GetAsync(Guid id)
-//         {
-//             User? user = await _userRepository.GetByIdAsync(id);
-//             return _mapper.Map<UserProfileResponse>(user);
-//         }
+        public async Task<UserResponse> GetAsync(string id)
+        {
+            UserEntity? user = await _userRepository.GetByIdAsync(id);
+            return _mapper.Map<UserResponse>(user);
+        }
 
-//         public async Task UpdateAsync(
-//             Guid id,
-//             string lastName,
-//             string firstName,
-//             string middleName,
-//             string description,
-//             string? jobTitle
-//         )
-//         {
-//             await _userRepository.UpdateAsync(
-//                 id,
-//                 lastName,
-//                 firstName,
-//                 middleName,
-//                 description,
-//                 jobTitle ?? string.Empty
-//             );
-//         }
+        public async Task UpdateAsync(string id, string name)
+        {
+            await _userRepository.UpdateAsync(id, name);
+        }
 
-//         public async Task<Guid> GetIdFromTokenAsync(string token)
-//         {
-//             TokenValidationResult validationResult = await _jwtProvider.ValidateTokenAsync(token);
+        public async Task<string> GetIdFromTokenAsync(string token)
+        {
+            TokenValidationResult validationResult = await _jwtProvider.ValidateTokenAsync(token);
 
-//             if (!validationResult.IsValid)
-//                 throw new UnauthorizedException();
+            if (!validationResult.IsValid)
+                throw new UnauthorizedException();
 
-//             string id =
-//                 validationResult.Claims[CustomClaims.UserId].ToString()
-//                 ?? throw new UnauthorizedException();
+            string id =
+                validationResult.Claims[CustomClaims.UserId].ToString()
+                ?? throw new UnauthorizedException();
 
-//             return Guid.Parse(id);
-//         }
+            return id;
+        }
 
-//         public async Task<string> GetRoleAsync(string token)
-//         {
-//             Guid id = await GetIdFromTokenAsync(token);
-//             string role =
-//                 await _userRepository.GetRoleByIdAsync(id)
-//                 ?? throw new NotFoundException("Пользователь не найден");
+        public async Task<string> GetRoleAsync(string token)
+        {
+            string id = await GetIdFromTokenAsync(token);
+            string role =
+                await _userRepository.GetRoleByIdAsync(id)
+                ?? throw new NotFoundException("Пользователь не найден");
 
-//             return role;
-//         }
+            return role;
+        }
 
-//         public async Task<IList<UserProfileResponse>> GetManyAsync(IList<Guid> ids)
-//         {
-//             IList<User> users = await _userRepository.GetManyByIdAsync(ids);
-//             return _mapper.Map<UserProfileResponse[]>(users);
-//         }
+        public async Task<IEnumerable<UserResponse>> GetManyAsync(IEnumerable<string> ids)
+        {
+            IEnumerable<UserEntity> users = await _userRepository.GetManyByIdAsync(ids);
+            return _mapper.Map<UserResponse[]>(users);
+        }
 
-//         public async Task DeleteAsync(string token)
-//         {
-//             Guid id = await GetIdFromTokenAsync(token);
+        public async Task DeleteAsync(string token)
+        {
+            string id = await GetIdFromTokenAsync(token);
 
-//             await _userRepository.DeleteByIdAsync(id);
-//         }
-//     }
-// }
+            await _userRepository.DeleteByIdAsync(id);
+        }
+
+        public async Task<IEnumerable<UserResponse>> GetAsync(IEnumerable<string> ids)
+        {
+            IEnumerable<UserEntity> users = await _userRepository.GetManyByIdAsync(ids);
+
+            return _mapper.Map<UserResponse[]>(users);
+        }
+    }
+}
